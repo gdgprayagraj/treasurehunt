@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222 22% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 22% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 22% 12%;
+
+    /* Primary = Google Blue #4285F4 */
+    --primary: 217 89% 61%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 222 22% 20%;
+
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 43%;
+
+    /* Accent = Google Blue tint */
+    --accent: 217 89% 96%;
+    --accent-foreground: 217 89% 40%;
+
+    /* Destructive = Google Red #EA4335 */
+    --destructive: 4 81% 56%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 88%;
+    --ring: 217 89% 61%;
+
+    --radius: 0.75rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-heading;
+  }
+}
+
+@layer utilities {
+  /* Subtle Google-four-color top rule used on hero/landing sections. */
+  .google-rule {
+    background-image: linear-gradient(
+      90deg,
+      #4285f4 0 25%,
+      #ea4335 25% 50%,
+      #fbbc05 50% 75%,
+      #34a853 75% 100%
+    );
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}

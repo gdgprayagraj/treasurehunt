@@ -1,0 +1,111 @@
+// GDG Multi-College QR Treasure Hunt — data model.
+// Tables are placed in a dedicated Postgres schema (see DATABASE_URL) so they stay
+// isolated from anything else living in the same database.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  ADMIN
+  SUB_ORGANIZER
+}
+
+enum QRStatus {
+  ACTIVE
+  SOLVED
+  DISABLED
+}
+
+model User {
+  id                 String   @id @default(cuid())
+  email              String   @unique
+  passwordHash       String
+  role               Role     @default(SUB_ORGANIZER)
+  collegeId          String?  @unique // one sub-organizer account per college
+  mustChangePassword Boolean  @default(false)
+  createdAt          DateTime @default(now())
+
+  college        College?  @relation(fields: [collegeId], references: [id], onDelete: SetNull)
+  createdQRCodes QRCode[]  @relation("QRCreatedBy")
+
+  @@index([role])
+}
+
+model College {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique // used in public URLs
+  huntStartAt DateTime? // set by the sub-organizer
+  huntEndAt   DateTime? // set by the sub-organizer
+  createdAt   DateTime  @default(now())
+
+  user         User?         // the single sub-organizer bound to this college
+  allowedEmail AllowedEmail?
+  qrCodes      QRCode[]
+}
+
+model AllowedEmail {
+  id        String    @id @default(cuid())
+  email     String    @unique // case-insensitive match enforced in app logic
+  collegeId String    @unique // exactly one allowlist row per college
+  claimedAt DateTime? // set once the sub-organizer signs up
+
+  college College @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+}
+
+model QRCode {
+  id            String   @id // short random non-sequential public slug (nanoid)
+  collegeId     String
+  createdByUserId String
+  label         String? // sub-organizer's internal reference name
+  riddleText    String
+  correctAnswer String // normalized/trimmed on save
+  qrImageUrl    String // public R2 URL
+  qrImageKey    String // R2 object key
+  status        QRStatus @default(ACTIVE)
+
+  // Solver snapshot (populated when the QR is first solved)
+  solverName  String?
+  solverEmail String?
+  solverPhone String?
+  solverYear  String?
+  solvedAt    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  college     College             @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+  createdBy   User                @relation("QRCreatedBy", fields: [createdByUserId], references: [id])
+  attempts    SubmissionAttempt[]
+
+  @@index([collegeId])
+  @@index([status])
+}
+
+model SubmissionAttempt {
+  id                          String   @id @default(cuid())
+  qrCodeId                    String
+  name                        String
+  email                       String
+  phone                       String
+  collegeNameReported         String // free-text/selected value the participant entered
+  year                        String
+  submittedAnswer             String
+  isCorrect                   Boolean
+  isFirstAttemptForParticipant Boolean // computed at write time
+  createdAt                   DateTime @default(now())
+
+  qrCode QRCode @relation(fields: [qrCodeId], references: [id], onDelete: Cascade)
+
+  @@index([qrCodeId])
+  @@index([email])
+  @@index([phone])
+  @@index([isFirstAttemptForParticipant, isCorrect])
+}
