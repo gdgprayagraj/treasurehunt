@@ -10,6 +10,7 @@
     "postinstall": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",
+    "db:seed:admin": "tsx prisma/seed-admin.ts",
     "db:studio": "prisma studio",
     "db:reset": "prisma db push --force-reset --accept-data-loss && prisma db seed"
   },

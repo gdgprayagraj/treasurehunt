@@ -25,7 +25,7 @@ export default async function HomePage() {
     {
       icon: QrCode,
       title: "Scan to reveal a riddle",
-      body: "Each QR unlocks a single riddle. Solve it to get the numeric answer.",
+      body: "Each QR unlocks a single riddle. Solve it to get the answer.",
       color: "#EA4335",
     },
     {

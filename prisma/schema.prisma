@@ -95,6 +95,7 @@ model SubmissionAttempt {
   name                        String
   email                       String
   phone                       String
+  rollNumber                  String // student ID / roll number (normalized for matching)
   collegeNameReported         String // free-text/selected value the participant entered
   year                        String
   submittedAnswer             String
@@ -107,5 +108,6 @@ model SubmissionAttempt {
   @@index([qrCodeId])
   @@index([email])
   @@index([phone])
+  @@index([rollNumber])
   @@index([isFirstAttemptForParticipant, isCorrect])
 }

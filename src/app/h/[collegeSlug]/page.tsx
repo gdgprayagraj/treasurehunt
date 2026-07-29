@@ -73,7 +73,7 @@ export default async function CollegeLandingPage({
               </p>
               <p className="mx-auto mt-4 max-w-lg text-balance text-muted-foreground">
                 Find the hidden QR codes around campus, scan one to reveal its riddle, solve
-                it for a numeric answer, then submit your QR ID and answer here.
+                it for the answer, then submit your QR ID and answer here.
               </p>
 
               {(college.huntStartAt || college.huntEndAt) && (

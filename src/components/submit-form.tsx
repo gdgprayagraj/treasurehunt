@@ -9,6 +9,8 @@ import {
   CheckCircle2,
   QrCode,
   Trophy,
+  XCircle,
+  ShieldAlert,
 } from "lucide-react";
 import type { SubmissionOutcome } from "@/lib/submission";
 import { Button } from "@/components/ui/button";
@@ -47,6 +49,7 @@ export function SubmitForm({ collegeName, collegeSlug, defaultQrId, colleges }: 
   const [qrId, setQrId] = useState(defaultQrId);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [rollNumber, setRollNumber] = useState("");
   const [reportedCollege, setReportedCollege] = useState(collegeName);
   const [year, setYear] = useState("");
   const [phone, setPhone] = useState("");
@@ -75,6 +78,7 @@ export function SubmitForm({ collegeName, collegeSlug, defaultQrId, colleges }: 
           qrId,
           name,
           email,
+          rollNumber,
           collegeName: reportedCollege,
           year,
           phone,
@@ -95,16 +99,14 @@ export function SubmitForm({ collegeName, collegeSlug, defaultQrId, colleges }: 
     }
 
     const outcome = data.result;
-    // These outcomes keep the form so the participant can correct and retry.
+    // Only an invalid QR ID keeps the form — it's a likely typo and isn't recorded
+    // as the participant's one submission, so they can correct it and try again.
     if (outcome.outcome === "INVALID_QR") {
       setError("Invalid QR ID, please check and try again.");
       return;
     }
-    if (outcome.outcome === "INCORRECT") {
-      setError("Incorrect answer.");
-      return;
-    }
-    // Everything else is terminal — swap to a result screen.
+    // Everything else is terminal — including an incorrect answer, since each
+    // participant gets a single submission.
     setResult(outcome);
   }
 
@@ -118,7 +120,7 @@ export function SubmitForm({ collegeName, collegeSlug, defaultQrId, colleges }: 
       <CardContent className="p-6 sm:p-8">
         <h1 className="font-heading text-2xl font-bold tracking-tight">Submit your answer</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Enter the QR ID from the code you scanned and the numeric answer you solved.
+          Enter the QR ID from the code you scanned and the answer you solved.
         </p>
 
         <div className="mt-4">
@@ -166,6 +168,18 @@ export function SubmitForm({ collegeName, collegeSlug, defaultQrId, colleges }: 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="rollNumber">Roll number / Student ID</Label>
+            <Input
+              id="rollNumber"
+              required
+              value={rollNumber}
+              onChange={(e) => setRollNumber(e.target.value)}
+              placeholder="e.g. 21BCE1234"
+              autoComplete="off"
             />
           </div>
 
@@ -224,10 +238,9 @@ export function SubmitForm({ collegeName, collegeSlug, defaultQrId, colleges }: 
             <Input
               id="answer"
               required
-              inputMode="numeric"
               value={answer}
               onChange={(e) => setAnswer(e.target.value)}
-              placeholder="The numeric answer to the riddle"
+              placeholder="Your answer to the riddle"
               className="text-lg"
             />
           </div>
@@ -371,7 +384,49 @@ function SubmitResult({
     );
   }
 
-  // Fallback (shouldn't be reached — INVALID_QR / INCORRECT stay on the form).
+  if (result.outcome === "INCORRECT") {
+    return (
+      <FadeIn>
+        <ResultShell>
+          <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-google-red/10">
+            <XCircle className="h-8 w-8 text-google-red" />
+          </span>
+          <h1 className="mt-5 font-heading text-2xl font-bold">That wasn&apos;t correct</h1>
+          <p className="mt-2 text-muted-foreground">
+            Each participant gets a single submission, so this one has been recorded. Thanks
+            for playing!
+          </p>
+          <Button asChild variant="outline" className="mt-6">
+            <Link href={`/h/${collegeSlug}`}>Back to the event</Link>
+          </Button>
+        </ResultShell>
+      </FadeIn>
+    );
+  }
+
+  if (result.outcome === "ALREADY_SUBMITTED") {
+    return (
+      <FadeIn>
+        <ResultShell>
+          <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-google-yellow/15">
+            <ShieldAlert className="h-8 w-8 text-[#8a6d00]" />
+          </span>
+          <h1 className="mt-5 font-heading text-2xl font-bold">
+            You&apos;ve already submitted
+          </h1>
+          <p className="mt-2 text-muted-foreground">
+            Only one submission per participant is allowed, and we already have yours on
+            record.
+          </p>
+          <Button asChild variant="outline" className="mt-6">
+            <Link href={`/h/${collegeSlug}`}>Back to the event</Link>
+          </Button>
+        </ResultShell>
+      </FadeIn>
+    );
+  }
+
+  // Fallback (shouldn't be reached — INVALID_QR stays on the form).
   return (
     <ResultShell>
       <QrCode className="mx-auto h-8 w-8 text-muted-foreground" />

@@ -98,7 +98,7 @@ export function BulkHuntWindowCard() {
           className="grid gap-4 sm:grid-cols-[1fr_1fr_auto_auto] sm:items-end"
         >
           <div className="space-y-2">
-            <Label htmlFor="bulkStart">Starts</Label>
+            <Label htmlFor="bulkStart">Starts (IST)</Label>
             <Input
               id="bulkStart"
               type="datetime-local"
@@ -108,7 +108,7 @@ export function BulkHuntWindowCard() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="bulkEnd">Ends</Label>
+            <Label htmlFor="bulkEnd">Ends (IST)</Label>
             <Input
               id="bulkEnd"
               type="datetime-local"
@@ -207,7 +207,7 @@ export function CollegeWindowDialog({
           ) : null}
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="cwStart">Starts</Label>
+              <Label htmlFor="cwStart">Starts (IST)</Label>
               <Input
                 id="cwStart"
                 type="datetime-local"
@@ -217,7 +217,7 @@ export function CollegeWindowDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="cwEnd">Ends</Label>
+              <Label htmlFor="cwEnd">Ends (IST)</Label>
               <Input
                 id="cwEnd"
                 type="datetime-local"

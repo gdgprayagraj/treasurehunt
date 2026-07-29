@@ -1,5 +1,10 @@
 import { prisma } from "@/lib/prisma";
-import { answersMatch, normalizeEmail, normalizePhone } from "@/lib/answer";
+import {
+  answersMatch,
+  normalizeEmail,
+  normalizePhone,
+  normalizeRollNumber,
+} from "@/lib/answer";
 import { getHuntStatus } from "@/lib/hunt";
 import { submissionSchema, type SubmissionInput } from "@/lib/validation";
 
@@ -7,6 +12,7 @@ export type SubmissionOutcome =
   | { outcome: "INVALID_QR" }
   | { outcome: "EVENT_INACTIVE"; collegeName: string }
   | { outcome: "ALREADY_SOLVED" }
+  | { outcome: "ALREADY_SUBMITTED" }
   | { outcome: "INCORRECT" }
   | {
       outcome: "CORRECT_WINNER";
@@ -26,9 +32,9 @@ export type SubmissionResult =
  *  1. validation
  *  2. global QR lookup (NOT scoped to the URL's college)
  *  3. invalid-id / window / already-solved short-circuits
- *  4. first-attempt-ever detection (email OR phone, platform-wide)
- *  5. numeric-safe correctness check
- *  6. always-log the attempt with computed flags
+ *  4. one-submission-per-participant guard (roll number OR email OR phone)
+ *  5. correctness check (numeric-safe, with a string fallback)
+ *  6. log the single attempt
  *  7. atomic conditional lock on a correct answer (winner vs. just-too-late)
  */
 export async function processSubmission(input: unknown): Promise<SubmissionResult> {
@@ -64,38 +70,45 @@ export async function processSubmission(input: unknown): Promise<SubmissionResul
     return { ok: true, result: { outcome: "ALREADY_SOLVED" } };
   }
 
-  // 4. First-attempt-ever detection across the whole platform (email OR phone).
+  // 4. One submission per participant, platform-wide: matched by roll number,
+  //    email, OR phone. If any prior attempt exists, this person is done.
   const email = normalizeEmail(data.email);
   const phone = normalizePhone(data.phone);
+  const rollNumber = normalizeRollNumber(data.rollNumber);
   const priorCount = await prisma.submissionAttempt.count({
     where: {
       OR: [
         { email: { equals: email, mode: "insensitive" } },
         ...(phone ? [{ phone }] : []),
+        ...(rollNumber ? [{ rollNumber }] : []),
       ],
     },
   });
-  const isFirstAttemptForParticipant = priorCount === 0;
+  if (priorCount > 0) {
+    return { ok: true, result: { outcome: "ALREADY_SUBMITTED" } };
+  }
 
-  // 5. Correctness (numeric-safe).
+  // 5. Correctness (numeric-safe, with a string fallback for text answers).
   const isCorrect = answersMatch(data.answer, qr.correctAnswer);
 
-  // 6. Always log the attempt with the computed flags.
+  // 6. Log the participant's one and only attempt.
   await prisma.submissionAttempt.create({
     data: {
       qrCodeId: qr.id,
       name: data.name.trim(),
       email,
       phone,
+      rollNumber,
       collegeNameReported: data.collegeName.trim(),
       year: data.year.trim(),
       submittedAnswer: data.answer.trim(),
       isCorrect,
-      isFirstAttemptForParticipant,
+      // Every stored attempt is the participant's only one, so it always counts.
+      isFirstAttemptForParticipant: true,
     },
   });
 
-  // 10. Incorrect — no retry messaging, no lock.
+  // Incorrect — that was their single submission, so no retry and no lock.
   if (!isCorrect) {
     return { ok: true, result: { outcome: "INCORRECT" } };
   }
@@ -121,7 +134,8 @@ export async function processSubmission(input: unknown): Promise<SubmissionResul
         qrId: qr.id,
         collegeName: qr.college.name,
         collegeSlug: qr.college.slug,
-        leaderboardEligible: isFirstAttemptForParticipant,
+        // It's their only submission, so a correct win is always leaderboard-eligible.
+        leaderboardEligible: true,
       },
     };
   }

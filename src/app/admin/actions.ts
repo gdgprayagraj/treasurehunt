@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/session";
 import { normalizeEmail } from "@/lib/answer";
 import { collegeSchema, allowedEmailSchema, huntWindowSchema } from "@/lib/validation";
+import { parseIstDateTimeLocal } from "@/lib/utils";
 
 type ActionResult<T = undefined> =
   | { ok: true; data?: T }
@@ -76,11 +77,12 @@ function parseWindow(input: { huntStartAt?: string; huntEndAt?: string }):
   | { ok: false; error: string } {
   const parsed = huntWindowSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Invalid dates." };
-  const start = parsed.data.huntStartAt ? new Date(parsed.data.huntStartAt) : null;
-  const end = parsed.data.huntEndAt ? new Date(parsed.data.huntEndAt) : null;
-  if (start && Number.isNaN(start.getTime()))
+  // The datetime-local inputs are entered in IST — interpret them as such.
+  const start = parseIstDateTimeLocal(parsed.data.huntStartAt);
+  const end = parseIstDateTimeLocal(parsed.data.huntEndAt);
+  if (parsed.data.huntStartAt && !start)
     return { ok: false, error: "Invalid start date." };
-  if (end && Number.isNaN(end.getTime()))
+  if (parsed.data.huntEndAt && !end)
     return { ok: false, error: "Invalid end date." };
   if (start && end && end <= start)
     return { ok: false, error: "End time must be after the start time." };

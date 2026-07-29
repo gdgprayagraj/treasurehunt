@@ -1,10 +1,11 @@
 /**
  * Answer normalization + comparison for the treasure hunt.
  *
- * Answers are expected to be numeric, but participants type them by hand outdoors,
- * so we compare defensively: trim, strip thousands separators, strip leading zeros,
- * and do a numeric-safe compare when both sides parse as numbers. If either side
- * isn't a clean number we fall back to a normalized string compare.
+ * Answers can be anything — a number, a word, or a phrase. Participants type them
+ * by hand outdoors, so we compare defensively: when both sides parse cleanly as
+ * numbers we do a numeric-safe compare (ignoring thousands separators and leading
+ * zeros); otherwise we fall back to a case-insensitive, whitespace-trimmed string
+ * compare.
  */
 
 /** Trim only — used when persisting `correctAnswer` on a QR code. */
@@ -59,4 +60,9 @@ export function normalizePhone(raw: string): string {
 /** Lower-cased, trimmed email used for case-insensitive participant matching. */
 export function normalizeEmail(raw: string): string {
   return String(raw ?? "").trim().toLowerCase();
+}
+
+/** Upper-cased, whitespace-stripped roll/student ID for consistent matching. */
+export function normalizeRollNumber(raw: string): string {
+  return String(raw ?? "").replace(/\s+/g, "").toUpperCase();
 }

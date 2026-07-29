@@ -6,6 +6,7 @@ import { PublicHeader } from "@/components/public-header";
 import { MessageScreen } from "@/components/message-screen";
 import { GoogleRule, FirstAttemptNotice } from "@/components/brand";
 import { CopyButton } from "@/components/copy-button";
+import { RiddleContent } from "@/components/riddle-content";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { FadeIn } from "@/components/motion";
@@ -98,9 +99,10 @@ export default async function RiddlePage({
                 Your riddle
               </div>
 
-              <p className="mt-4 whitespace-pre-wrap text-balance text-xl font-medium leading-relaxed">
-                {qr.riddleText}
-              </p>
+              <RiddleContent
+                text={qr.riddleText}
+                className="mt-4 text-xl font-medium"
+              />
 
               <div className="mt-8 rounded-xl border-2 border-dashed border-google-blue/40 bg-google-blue/5 p-5 text-center">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -115,7 +117,7 @@ export default async function RiddlePage({
               </div>
 
               <p className="mt-6 text-center text-sm text-muted-foreground">
-                Solve the riddle to get your numeric answer, then submit your{" "}
+                Solve the riddle to get your answer, then submit your{" "}
                 <span className="font-medium text-foreground">QR ID</span> and answer on the{" "}
                 {college.name} submission form.
               </p>

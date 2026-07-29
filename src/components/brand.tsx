@@ -46,7 +46,7 @@ export function GoogleRule({ className }: { className?: string }) {
   return <div className={cn("h-1.5 w-full google-rule", className)} />;
 }
 
-/** Repeated notice about the first-submission-only leaderboard rule. */
+/** Repeated notice about the one-submission-per-participant rule. */
 export function FirstAttemptNotice({ className }: { className?: string }) {
   return (
     <p
@@ -55,9 +55,9 @@ export function FirstAttemptNotice({ className }: { className?: string }) {
         className,
       )}
     >
-      <span className="font-semibold">Heads up:</span> only your{" "}
-      <span className="font-semibold">very first submission ever</span> counts toward the
-      leaderboard — make sure it&apos;s right.
+      <span className="font-semibold">Heads up:</span> only{" "}
+      <span className="font-semibold">one submission per participant</span> is allowed —
+      make sure your answer is right before you submit.
     </p>
   );
 }
