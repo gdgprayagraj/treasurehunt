@@ -13,11 +13,13 @@ import {
   ExternalLink,
   QrCode as QrIcon,
   Lock,
+  Trash2,
 } from "lucide-react";
 import {
   createQrAction,
   updateQrAction,
   setQrStatusAction,
+  deleteQrAction,
 } from "@/app/dashboard/actions";
 import {
   Dialog,
@@ -169,6 +171,7 @@ export function QrManager({ qrs }: { qrs: QrRow[] }) {
                             <StatusToggle qr={qr} onDone={() => router.refresh()} />
                           </>
                         )}
+                        <DeleteButton qr={qr} onDone={() => router.refresh()} />
                       </div>
                     </TableCell>
                   </TableRow>
@@ -247,6 +250,62 @@ function StatusToggle({ qr, onDone }: { qr: QrRow; onDone: () => void }) {
   );
 }
 
+/** Permanently delete a QR (distinct from disabling), behind a confirmation dialog. */
+function DeleteButton({ qr, onDone }: { qr: QrRow; onDone: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  async function confirmDelete() {
+    setLoading(true);
+    const res = await deleteQrAction(qr.id);
+    setLoading(false);
+    if (!res.ok) {
+      toast({ variant: "destructive", title: "Couldn't delete", description: res.error });
+      return;
+    }
+    toast({ variant: "success", title: "QR deleted" });
+    setOpen(false);
+    onDone();
+  }
+
+  return (
+    <>
+      <Button
+        variant="ghost"
+        size="icon"
+        aria-label="Delete"
+        onClick={() => setOpen(true)}
+        title="Delete permanently"
+      >
+        <Trash2 className="h-4 w-4 text-google-red" />
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete this QR code?</DialogTitle>
+            <DialogDescription>
+              This permanently removes{" "}
+              <span className="font-medium text-foreground">{qr.label || "this QR"}</span> (
+              <span className="font-mono">{qr.id}</span>) and its attempt logs
+              {qr.status === "SOLVED" ? ", including the winner record" : ""}. This can&apos;t
+              be undone. To take it offline instead, use Disable.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)} disabled={loading}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmDelete} disabled={loading}>
+              {loading ? <Loader2 className="animate-spin" /> : <Trash2 className="h-4 w-4" />}
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
 function QrFormDialog({
   open,
   onOpenChange,
@@ -322,6 +381,10 @@ function QrFormDialog({
               placeholder="Write the riddle participants will see after scanning."
               className="min-h-[120px]"
             />
+            <p className="text-xs text-muted-foreground">
+              No length limit. Wrap code in triple backticks (```) for a formatted code
+              block, or `single backticks` for inline code.
+            </p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="correctAnswer">Correct answer</Label>
@@ -330,10 +393,11 @@ function QrFormDialog({
               required
               value={correctAnswer}
               onChange={(e) => setCorrectAnswer(e.target.value)}
-              placeholder="The numeric answer (e.g. 42)"
+              placeholder="The answer (a number, word, or phrase)"
             />
             <p className="text-xs text-muted-foreground">
-              Compared leniently: leading zeros and spacing are ignored.
+              Can be anything — a number, word, or phrase. Compared leniently: case, leading
+              zeros, and spacing are ignored.
             </p>
           </div>
           <DialogFooter>

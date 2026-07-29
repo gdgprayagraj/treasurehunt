@@ -128,3 +128,20 @@ export async function setQrStatusAction(
   revalidatePath(`/dashboard/qrs/${id}`);
   return { ok: true };
 }
+
+/**
+ * Permanently delete a QR (and its attempt logs, via the schema's cascade).
+ * This is distinct from disabling — disabling keeps the record and can be undone,
+ * while deleting removes it for good. Allowed for any status, including SOLVED.
+ */
+export async function deleteQrAction(id: string): Promise<ActionResult> {
+  const user = await requireOrganizer();
+  const qr = await prisma.qRCode.findUnique({ where: { id } });
+  if (!qr || qr.collegeId !== user.collegeId) {
+    return { ok: false, error: "QR not found." };
+  }
+  await prisma.qRCode.delete({ where: { id } });
+  revalidatePath("/dashboard/qrs");
+  revalidatePath(`/dashboard/qrs/${id}`);
+  return { ok: true };
+}

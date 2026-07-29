@@ -249,6 +249,7 @@ async function main() {
     name: string;
     email: string;
     phone: string;
+    roll: string;
     reported: string;
     year: string;
     answer: string;
@@ -266,6 +267,7 @@ async function main() {
       phone: "+91 90000 00001",
       reported: "Northfield Institute of Technology",
       year: "Second Year",
+      roll: "21NIT001",
       answer: "42",
       correct: true,
       first: true,
@@ -279,6 +281,7 @@ async function main() {
       phone: "+91 90000 00002",
       reported: "Northfield Institute of Technology",
       year: "Third Year",
+      roll: "21NIT002",
       answer: "5",
       correct: false,
       first: true,
@@ -292,6 +295,7 @@ async function main() {
       phone: "+91 90000 00003",
       reported: "Northfield Institute of Technology",
       year: "First Year",
+      roll: "21NIT003",
       answer: "100",
       correct: true,
       first: true,
@@ -305,6 +309,7 @@ async function main() {
       phone: "+91 90000 00004",
       reported: "Northfield Institute of Technology",
       year: "Fourth Year",
+      roll: "21NIT004",
       answer: "12",
       correct: false,
       first: true,
@@ -319,6 +324,7 @@ async function main() {
       phone: "+91 90000 00002",
       reported: "Northfield Institute of Technology",
       year: "Third Year",
+      roll: "21NIT002",
       answer: "7",
       correct: true,
       first: false,
@@ -332,6 +338,7 @@ async function main() {
       phone: "+91 90000 00005",
       reported: "Westbrook University",
       year: "Second Year",
+      roll: "21WBU005",
       answer: "20",
       correct: false,
       first: true,
@@ -345,6 +352,7 @@ async function main() {
       phone: "+91 90000 00004",
       reported: "Northfield Institute of Technology",
       year: "Fourth Year",
+      roll: "21NIT004",
       answer: "18",
       correct: false,
       first: false,
@@ -359,6 +367,7 @@ async function main() {
         name: a.name,
         email: a.email.toLowerCase(),
         phone: a.phone.replace(/\D/g, ""),
+        rollNumber: a.roll.replace(/\s+/g, "").toUpperCase(),
         collegeNameReported: a.reported,
         year: a.year,
         submittedAnswer: a.answer,

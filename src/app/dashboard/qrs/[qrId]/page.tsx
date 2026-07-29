@@ -41,6 +41,7 @@ export default async function QrDetailPage({
     name: a.name,
     email: a.email,
     phone: a.phone,
+    rollNumber: a.rollNumber,
     collegeNameReported: a.collegeNameReported,
     year: a.year,
     submittedAnswer: a.submittedAnswer,

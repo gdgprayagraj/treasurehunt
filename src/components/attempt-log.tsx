@@ -1,4 +1,4 @@
-import { Check, X, Star } from "lucide-react";
+import { Check, X } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -15,6 +15,7 @@ export type AttemptRow = {
   name: string;
   email: string;
   phone: string;
+  rollNumber: string;
   collegeNameReported: string;
   year: string;
   submittedAnswer: string;
@@ -23,7 +24,7 @@ export type AttemptRow = {
   createdAt: string;
 };
 
-/** Full attempt log with the leaderboard-eligible (first-attempt) flag badged. */
+/** Full attempt log. Each participant gets a single submission. */
 export function AttemptLog({ attempts }: { attempts: AttemptRow[] }) {
   if (attempts.length === 0) {
     return (
@@ -42,7 +43,6 @@ export function AttemptLog({ attempts }: { attempts: AttemptRow[] }) {
           <TableHead className="hidden lg:table-cell">Reported college</TableHead>
           <TableHead>Answer</TableHead>
           <TableHead>Result</TableHead>
-          <TableHead>First?</TableHead>
           <TableHead className="hidden sm:table-cell">When</TableHead>
         </TableRow>
       </TableHeader>
@@ -51,6 +51,7 @@ export function AttemptLog({ attempts }: { attempts: AttemptRow[] }) {
           <TableRow key={a.id}>
             <TableCell>
               <div className="font-medium">{a.name}</div>
+              <div className="font-mono text-xs text-muted-foreground">{a.rollNumber}</div>
               <div className="text-xs text-muted-foreground md:hidden">{a.email}</div>
               <div className="text-xs text-muted-foreground">{a.year}</div>
             </TableCell>
@@ -71,15 +72,6 @@ export function AttemptLog({ attempts }: { attempts: AttemptRow[] }) {
                 <Badge variant="destructive">
                   <X className="mr-1 h-3 w-3" /> Wrong
                 </Badge>
-              )}
-            </TableCell>
-            <TableCell>
-              {a.isFirstAttemptForParticipant ? (
-                <Badge variant="active" title="Counted toward the leaderboard">
-                  <Star className="mr-1 h-3 w-3" /> First
-                </Badge>
-              ) : (
-                <span className="text-xs text-muted-foreground">—</span>
               )}
             </TableCell>
             <TableCell className="hidden sm:table-cell text-xs text-muted-foreground">

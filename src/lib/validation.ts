@@ -59,7 +59,8 @@ export const resetPasswordSchema = z.object({
 // ── Sub-organizer ────────────────────────────────────────────────────────────
 export const qrCreateSchema = z.object({
   label: z.string().trim().max(120).optional().or(z.literal("")),
-  riddleText: z.string().trim().min(3, "Riddle text is required").max(2000),
+  // No length cap — riddles can be long (e.g. code snippets).
+  riddleText: z.string().trim().min(3, "Riddle text is required"),
   correctAnswer: z.string().trim().min(1, "Correct answer is required").max(200),
 });
 
@@ -77,6 +78,7 @@ export const submissionSchema = z.object({
   qrId: z.string().trim().min(1, "QR ID is required").max(64),
   name: z.string().trim().min(2, "Your name is required").max(120),
   email,
+  rollNumber: z.string().trim().min(1, "Roll / student ID is required").max(60),
   collegeName: z.string().trim().min(2, "College name is required").max(160),
   year: z.string().trim().min(1, "Year is required").max(40),
   phone: z

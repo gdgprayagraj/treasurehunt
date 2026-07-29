@@ -3,6 +3,7 @@ import { ArrowLeft, Lock, Eye, EyeOff } from "lucide-react";
 import { QrStatusBadge } from "@/components/qr-status-badge";
 import { AttemptLog, type AttemptRow } from "@/components/attempt-log";
 import { CopyButton } from "@/components/copy-button";
+import { RiddleContent } from "@/components/riddle-content";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDateTime } from "@/lib/utils";
@@ -67,7 +68,7 @@ export function QrDetail({
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 Riddle
               </p>
-              <p className="mt-1 whitespace-pre-wrap">{qr.riddleText}</p>
+              <RiddleContent text={qr.riddleText} className="mt-1 text-sm" />
             </div>
 
             <div>

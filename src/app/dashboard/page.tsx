@@ -3,6 +3,8 @@ import { ExternalLink, QrCode, Trophy, Info } from "lucide-react";
 import { requireSubOrganizer } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { getCollegeStats } from "@/lib/queries";
+import { getHuntStatus } from "@/lib/hunt";
+import { formatDateTime } from "@/lib/utils";
 import { getBaseUrl } from "@/lib/qr";
 import { StatCard } from "@/components/stat-card";
 import { ProgressBar } from "@/components/progress-bar";
@@ -13,6 +15,39 @@ import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
 
+// Read-only presentation of the admin-controlled hunt window, so the sub-organizer
+// knows when their college's hunt is open (e.g. to announce it on campus).
+const timingConfig = {
+  LIVE: {
+    title: "Live now",
+    desc: "Your college's hunt is open — go ahead and announce it!",
+    dot: "bg-google-green",
+    pulse: true,
+    box: "border-google-green/40 bg-google-green/10",
+  },
+  NOT_STARTED: {
+    title: "Scheduled",
+    desc: "The admin has scheduled your hunt. It opens automatically at the start time.",
+    dot: "bg-google-yellow",
+    pulse: false,
+    box: "border-google-yellow/50 bg-google-yellow/10",
+  },
+  ENDED: {
+    title: "Ended",
+    desc: "Your college's hunt window has closed. Rankings are final.",
+    dot: "bg-google-red",
+    pulse: false,
+    box: "border-google-red/40 bg-google-red/10",
+  },
+  NOT_CONFIGURED: {
+    title: "Not open yet",
+    desc: "The event admin hasn't opened your hunt yet. Hang tight.",
+    dot: "bg-muted-foreground",
+    pulse: false,
+    box: "border-border bg-muted/40",
+  },
+} as const;
+
 export default async function DashboardOverview() {
   const user = await requireSubOrganizer();
   const college = await prisma.college.findUniqueOrThrow({
@@ -20,6 +55,8 @@ export default async function DashboardOverview() {
   });
   const stats = await getCollegeStats(college.id);
   const publicUrl = `${getBaseUrl()}/h/${college.slug}`;
+  const huntStatus = getHuntStatus(college.huntStartAt, college.huntEndAt);
+  const timing = timingConfig[huntStatus];
 
   return (
     <div className="space-y-8">
@@ -29,6 +66,19 @@ export default async function DashboardOverview() {
             {college.name}
           </h1>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold ${timing.box}`}
+            >
+              <span className="relative flex h-2 w-2">
+                {timing.pulse ? (
+                  <span
+                    className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 ${timing.dot}`}
+                  />
+                ) : null}
+                <span className={`relative inline-flex h-2 w-2 rounded-full ${timing.dot}`} />
+              </span>
+              Hunt {timing.title.toLowerCase()}
+            </span>
             <span className="inline-flex items-center gap-1">
               <span className="font-mono">/h/{college.slug}</span>
               <CopyButton value={publicUrl} size="icon" className="h-6 w-6" />
@@ -115,15 +165,46 @@ export default async function DashboardOverview() {
             <CardHeader>
               <CardTitle>Event timing</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="flex items-start gap-2 rounded-lg border border-google-blue/30 bg-google-blue/5 p-3 text-sm">
-                <Info className="mt-0.5 h-4 w-4 shrink-0 text-google-blue" />
-                <span>
-                  The hunt&apos;s start and end time is opened and controlled by the event
-                  admin — you don&apos;t need to manage it here. Just prepare and hide your QR
-                  codes; they go live automatically when the admin opens the event.
+            <CardContent className="space-y-3">
+              <div
+                className={`flex items-center gap-3 rounded-lg border p-3 ${timing.box}`}
+              >
+                <span className="relative flex h-3 w-3 shrink-0">
+                  {timing.pulse ? (
+                    <span
+                      className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 ${timing.dot}`}
+                    />
+                  ) : null}
+                  <span
+                    className={`relative inline-flex h-3 w-3 rounded-full ${timing.dot}`}
+                  />
                 </span>
+                <div className="min-w-0">
+                  <p className="font-semibold leading-tight">{timing.title}</p>
+                  <p className="text-sm text-muted-foreground">{timing.desc}</p>
+                </div>
               </div>
+
+              {college.huntStartAt || college.huntEndAt ? (
+                <div className="grid grid-cols-2 gap-2 rounded-lg border bg-muted/30 p-3 text-sm">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Opens</p>
+                    <p className="font-medium">{formatDateTime(college.huntStartAt)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Closes</p>
+                    <p className="font-medium">{formatDateTime(college.huntEndAt)}</p>
+                  </div>
+                </div>
+              ) : null}
+
+              <p className="flex items-start gap-2 text-xs text-muted-foreground">
+                <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-google-blue" />
+                <span>
+                  The timing is opened and controlled by the event admin — this is just so you
+                  know your current status.
+                </span>
+              </p>
             </CardContent>
           </Card>
         </FadeIn>

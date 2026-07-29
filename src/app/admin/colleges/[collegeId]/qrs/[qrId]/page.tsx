@@ -40,6 +40,7 @@ export default async function AdminQrDetailPage({
     name: a.name,
     email: a.email,
     phone: a.phone,
+    rollNumber: a.rollNumber,
     collegeNameReported: a.collegeNameReported,
     year: a.year,
     submittedAnswer: a.submittedAnswer,

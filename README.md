@@ -86,10 +86,25 @@ pending invite), QR codes in every state, and an attempt log that visibly exerci
 first-attempt leaderboard rule. It prints the sign-in credentials when done:
 
 ```
-Admin          : admin@gdg.example / AdminPass123!
+Admin          : admin@gdg.example / AdminPass123!   (or your SEED_ADMIN_* values)
 Sub-organizer  : aisha.northfield@gdg.example / OrganizerPass123!
 Pending invite : ravi.westbrook@gdg.example  (unclaimed — try /signup)
 ```
+
+**Admins don't sign up.** The `/signup` page is only for allowlisted sub-organizers (it always
+creates a `SUB_ORGANIZER`). The Super Admin is created by the seed using `SEED_ADMIN_EMAIL` /
+`SEED_ADMIN_PASSWORD` from your `.env` (falling back to the example values if unset); you then
+**log in** at `/login`.
+
+**Clean production start (admin only, no demo data):**
+
+```bash
+npm run db:seed:admin
+```
+
+This creates/updates only your admin account from `SEED_ADMIN_*` and touches nothing else —
+safe to run against a live database. From there, add colleges and authorize sub-organizer
+emails in the admin dashboard.
 
 ### 5. Run
 
