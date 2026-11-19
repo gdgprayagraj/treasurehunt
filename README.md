@@ -12,6 +12,7 @@ Built with Next.js 14 (App Router), TypeScript, Tailwind + shadcn/ui, Prisma + P
 `canvas-confetti`. Themed strictly in the four Google brand colors.
 
 ---
+---
 
 ## How it works
 
