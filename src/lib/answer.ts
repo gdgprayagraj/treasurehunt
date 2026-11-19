@@ -52,9 +52,27 @@ export function answersMatch(submitted: string, correct: string): boolean {
   return canonicalizeAnswer(a) === canonicalizeAnswer(b);
 }
 
-/** Digits-only phone form used for cross-platform participant matching. */
+/**
+ * Digits-only phone form used for cross-platform participant matching.
+ * Indian numbers are reduced to their 10 digits, so "+91 98765 43210",
+ * "091 98765 43210", "098765 43210" and "98765 43210" all become "9876543210".
+ */
 export function normalizePhone(raw: string): string {
-  return String(raw ?? "").replace(/\D/g, "");
+  const digits = String(raw ?? "").replace(/\D/g, "");
+  if (digits.length === 12 && digits.startsWith("91")) return digits.slice(2);
+  if (digits.length === 13 && digits.startsWith("091")) return digits.slice(3);
+  if (digits.length === 11 && digits.startsWith("0")) return digits.slice(1);
+  return digits;
+}
+
+/**
+ * Every stored form a phone may have, for duplicate checks. Rows saved before
+ * the 10-digit rule may hold "919876543210", so we match those too.
+ */
+export function phoneMatchVariants(normalized: string): string[] {
+  if (!normalized) return [];
+  if (normalized.length === 10) return [normalized, `91${normalized}`, `0${normalized}`];
+  return [normalized];
 }
 
 /** Lower-cased, trimmed email used for case-insensitive participant matching. */

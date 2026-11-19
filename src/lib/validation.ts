@@ -78,7 +78,7 @@ export const submissionSchema = z.object({
   qrId: z.string().trim().min(1, "QR ID is required").max(64),
   name: z.string().trim().min(2, "Your name is required").max(120),
   email,
-  rollNumber: z.string().trim().min(1, "Roll / student ID is required").max(60),
+  rollNumber: z.string().trim().min(1, "Your college roll number is required").max(60),
   collegeName: z.string().trim().min(2, "College name is required").max(160),
   year: z.string().trim().min(1, "Year is required").max(40),
   phone: z
@@ -88,6 +88,11 @@ export const submissionSchema = z.object({
     .max(20)
     .regex(/^[+()\-\s0-9]+$/, "Enter a valid contact number"),
   answer: z.string().trim().min(1, "Answer is required").max(200),
+  // The participant must tick "I have checked my details" before submitting.
+  // Checked here too, so the form can't be skipped by sending data directly.
+  agreed: z.literal(true, {
+    errorMap: () => ({ message: "Please confirm that you have checked your details." }),
+  }),
 });
 
 export type SubmissionInput = z.infer<typeof submissionSchema>;

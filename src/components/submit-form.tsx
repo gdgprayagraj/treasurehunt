@@ -59,6 +59,7 @@ export function SubmitForm({ collegeName, collegeSlug, defaultQrId, colleges }: 
   const [year, setYear] = useState("");
   const [phone, setPhone] = useState("");
   const [answer, setAnswer] = useState("");
+  const [agreed, setAgreed] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -70,6 +71,10 @@ export function SubmitForm({ collegeName, collegeSlug, defaultQrId, colleges }: 
 
     if (!year) {
       setError("Please select your year.");
+      return;
+    }
+    if (!agreed) {
+      setError("Please tick the box to confirm you have checked your details.");
       return;
     }
 
@@ -88,6 +93,7 @@ export function SubmitForm({ collegeName, collegeSlug, defaultQrId, colleges }: 
           year,
           phone,
           answer,
+          agreed,
         }),
       });
       data = await res.json();
@@ -192,15 +198,28 @@ export function SubmitForm({ collegeName, collegeSlug, defaultQrId, colleges }: 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="rollNumber">Roll number / Student ID</Label>
+            <Label htmlFor="rollNumber">College roll number</Label>
             <Input
               id="rollNumber"
               required
               value={rollNumber}
               onChange={(e) => setRollNumber(e.target.value)}
-              placeholder="e.g. 21BCE1234"
+              placeholder="e.g. 2101640100123"
               autoComplete="off"
+              aria-describedby="rollNumber-note"
             />
+            <div
+              id="rollNumber-note"
+              className="flex items-start gap-2 rounded-md border border-google-yellow/50 bg-google-yellow/10 px-3 py-2 text-xs leading-relaxed text-foreground"
+            >
+              <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-[#8a6d00]" />
+              <span>
+                Enter <span className="font-semibold">only your college roll number</span>. Do
+                not enter an enrollment number or any other ID. Prizes are checked against this
+                roll number only. If it doesn&apos;t match your college roll number, you
+                can&apos;t claim the prize.
+              </span>
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -265,7 +284,30 @@ export function SubmitForm({ collegeName, collegeSlug, defaultQrId, colleges }: 
             />
           </div>
 
-          <Button type="submit" size="lg" className="w-full" disabled={loading}>
+          <label
+            htmlFor="agreed"
+            className={`flex cursor-pointer items-start gap-3 rounded-md border px-3 py-3 text-sm leading-relaxed transition-colors ${
+              agreed ? "border-google-blue/50 bg-google-blue/5" : "border-border bg-muted/30"
+            }`}
+          >
+            <input
+              id="agreed"
+              type="checkbox"
+              required
+              checked={agreed}
+              onChange={(e) => setAgreed(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-google-blue"
+            />
+            <span>
+              I have checked all my details and my answer. I understand that{" "}
+              <span className="font-semibold">
+                no requests to change anything will be accepted after I submit
+              </span>
+              , even if I made a mistake.
+            </span>
+          </label>
+
+          <Button type="submit" size="lg" className="w-full" disabled={loading || !agreed}>
             {loading ? <Loader2 className="animate-spin" /> : null}
             Submit answer
           </Button>
