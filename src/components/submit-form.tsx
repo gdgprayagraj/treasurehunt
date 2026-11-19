@@ -26,6 +26,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { GoogleRule, FirstAttemptNotice } from "@/components/brand";
 import { FadeIn } from "@/components/motion";
+import { CollegeCombobox } from "@/components/college-combobox";
 import { ConfettiBurst, SuccessCheck } from "@/components/confetti-success";
 
 const YEARS = [
@@ -224,21 +225,17 @@ export function SubmitForm({ collegeName, collegeSlug, defaultQrId, colleges }: 
 
           <div className="space-y-2">
             <Label htmlFor="reportedCollege">College name</Label>
-            <Input
+            <CollegeCombobox
               id="reportedCollege"
               required
-              list="college-options"
               value={reportedCollege}
-              onChange={(e) => setReportedCollege(e.target.value)}
-              placeholder="Start typing your college"
+              onChange={setReportedCollege}
+              options={colleges.map((c) => c.name)}
+              placeholder="Pick or type your college"
             />
-            <datalist id="college-options">
-              {colleges.map((c) => (
-                <option key={c.name} value={c.name} />
-              ))}
-            </datalist>
             <p className="text-xs text-muted-foreground">
-              Pick from the list or type your own — it&apos;s not locked to this page.
+              Pick your college from the list. If it isn&apos;t there, type its name and choose
+              &ldquo;Use&rdquo;.
             </p>
           </div>
 
