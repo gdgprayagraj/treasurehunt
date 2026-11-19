@@ -3,6 +3,7 @@ import {
   answersMatch,
   normalizeEmail,
   normalizePhone,
+  phoneMatchVariants,
   normalizeRollNumber,
 } from "@/lib/answer";
 import { getHuntStatus } from "@/lib/hunt";
@@ -79,7 +80,7 @@ export async function processSubmission(input: unknown): Promise<SubmissionResul
     where: {
       OR: [
         { email: { equals: email, mode: "insensitive" } },
-        ...(phone ? [{ phone }] : []),
+        ...(phone ? [{ phone: { in: phoneMatchVariants(phone) } }] : []),
         ...(rollNumber ? [{ rollNumber }] : []),
       ],
     },
