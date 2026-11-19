@@ -46,7 +46,12 @@ type Props = {
 };
 
 export function SubmitForm({ collegeName, collegeSlug, defaultQrId, colleges }: Props) {
-  const [qrId, setQrId] = useState(defaultQrId);
+  // When the participant arrives from a scanned riddle, the QR ID comes from the
+  // link and is locked, so it can't be changed by mistake. When they open the
+  // submit page directly (no ?qr= in the link), they type it in themselves.
+  const qrFromLink = defaultQrId.trim();
+  const qrLocked = qrFromLink.length > 0;
+  const [qrId, setQrId] = useState(qrFromLink);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [rollNumber, setRollNumber] = useState("");
@@ -102,7 +107,11 @@ export function SubmitForm({ collegeName, collegeSlug, defaultQrId, colleges }: 
     // Only an invalid QR ID keeps the form — it's a likely typo and isn't recorded
     // as the participant's one submission, so they can correct it and try again.
     if (outcome.outcome === "INVALID_QR") {
-      setError("Invalid QR ID, please check and try again.");
+      setError(
+        qrLocked
+          ? "This QR code is no longer valid. Please scan it again, or ask an organizer."
+          : "Invalid QR ID, please check and try again.",
+      );
       return;
     }
     // Everything else is terminal — including an incorrect answer, since each
@@ -120,7 +129,9 @@ export function SubmitForm({ collegeName, collegeSlug, defaultQrId, colleges }: 
       <CardContent className="p-6 sm:p-8">
         <h1 className="font-heading text-2xl font-bold tracking-tight">Submit your answer</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Enter the QR ID from the code you scanned and the answer you solved.
+          {qrLocked
+            ? "Fill in your details and the answer you solved."
+            : "Enter the QR ID from the code you scanned and the answer you solved."}
         </p>
 
         <div className="mt-4">
@@ -141,11 +152,20 @@ export function SubmitForm({ collegeName, collegeSlug, defaultQrId, colleges }: 
               id="qrId"
               required
               value={qrId}
-              onChange={(e) => setQrId(e.target.value)}
+              readOnly={qrLocked}
+              aria-readonly={qrLocked}
+              onChange={qrLocked ? undefined : (e) => setQrId(e.target.value)}
               placeholder="e.g. A1b2C3d4E5"
-              className="font-mono tracking-wider"
+              className={`font-mono tracking-wider ${
+                qrLocked ? "cursor-not-allowed bg-muted text-muted-foreground focus-visible:ring-0" : ""
+              }`}
               autoComplete="off"
             />
+            {qrLocked ? (
+              <p className="text-xs text-muted-foreground">
+                Filled in automatically from the QR code you scanned.
+              </p>
+            ) : null}
           </div>
 
           <div className="space-y-2">
