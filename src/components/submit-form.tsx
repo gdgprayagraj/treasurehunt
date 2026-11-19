@@ -11,6 +11,7 @@ import {
   Trophy,
   XCircle,
   ShieldAlert,
+  Lock,
 } from "lucide-react";
 import type { SubmissionOutcome } from "@/lib/submission";
 import { Button } from "@/components/ui/button";
@@ -146,34 +147,7 @@ export function SubmitForm({ collegeName, collegeSlug, defaultQrId, colleges }: 
         </div>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
-          {error ? (
-            <div className="flex items-start gap-2 rounded-md border border-google-red/40 bg-google-red/10 px-3 py-2 text-sm text-google-red">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-              <span>{error}</span>
-            </div>
-          ) : null}
-
-          <div className="space-y-2">
-            <Label htmlFor="qrId">QR ID</Label>
-            <Input
-              id="qrId"
-              required
-              value={qrId}
-              readOnly={qrLocked}
-              aria-readonly={qrLocked}
-              onChange={qrLocked ? undefined : (e) => setQrId(e.target.value)}
-              placeholder="e.g. A1b2C3d4E5"
-              className={`font-mono tracking-wider ${
-                qrLocked ? "cursor-not-allowed bg-muted text-muted-foreground focus-visible:ring-0" : ""
-              }`}
-              autoComplete="off"
-            />
-            {qrLocked ? (
-              <p className="text-xs text-muted-foreground">
-                Filled in automatically from the QR code you scanned.
-              </p>
-            ) : null}
-          </div>
+          <SectionHeading step={1} title="Your details" />
 
           <div className="space-y-2">
             <Label htmlFor="name">Full name</Label>
@@ -269,6 +243,38 @@ export function SubmitForm({ collegeName, collegeSlug, defaultQrId, colleges }: 
             </div>
           </div>
 
+          <SectionHeading step={2} title="Your answer" className="pt-4" />
+
+          <div className="space-y-2">
+            <Label htmlFor="qrId">QR ID</Label>
+            <div className="relative">
+              <QrCode className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="qrId"
+                required
+                value={qrId}
+                readOnly={qrLocked}
+                aria-readonly={qrLocked}
+                onChange={qrLocked ? undefined : (e) => setQrId(e.target.value)}
+                placeholder="e.g. A1b2C3d4E5"
+                className={`pl-9 font-mono tracking-wider ${
+                  qrLocked
+                    ? "cursor-not-allowed bg-muted text-muted-foreground focus-visible:ring-0"
+                    : ""
+                }`}
+                autoComplete="off"
+              />
+              {qrLocked ? (
+                <Lock className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              ) : null}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {qrLocked
+                ? "Filled in automatically from the QR code you scanned."
+                : "You'll find it on the riddle page, under “Your QR ID”."}
+            </p>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="answer">Your answer</Label>
             <Input
@@ -280,6 +286,16 @@ export function SubmitForm({ collegeName, collegeSlug, defaultQrId, colleges }: 
               className="text-lg"
             />
           </div>
+
+          {error ? (
+            <div
+              role="alert"
+              className="flex items-start gap-2 rounded-md border border-google-red/40 bg-google-red/10 px-3 py-2 text-sm text-google-red"
+            >
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+              <span>{error}</span>
+            </div>
+          ) : null}
 
           <label
             htmlFor="agreed"
@@ -311,6 +327,29 @@ export function SubmitForm({ collegeName, collegeSlug, defaultQrId, colleges }: 
         </form>
       </CardContent>
     </Card>
+  );
+}
+
+/** A small numbered heading that splits the form into easy steps. */
+function SectionHeading({
+  step,
+  title,
+  className = "",
+}: {
+  step: number;
+  title: string;
+  className?: string;
+}) {
+  return (
+    <div className={`flex items-center gap-3 ${className}`}>
+      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-google-blue text-xs font-bold text-white">
+        {step}
+      </span>
+      <h2 className="font-heading text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        {title}
+      </h2>
+      <span className="h-px flex-1 bg-border" aria-hidden />
+    </div>
   );
 }
 
