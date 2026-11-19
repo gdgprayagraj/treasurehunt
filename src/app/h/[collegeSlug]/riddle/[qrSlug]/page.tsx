@@ -117,9 +117,9 @@ export default async function RiddlePage({
               </div>
 
               <p className="mt-6 text-center text-sm text-muted-foreground">
-                Solve the riddle to get your answer, then submit your{" "}
-                <span className="font-medium text-foreground">QR ID</span> and answer on the{" "}
-                {college.name} submission form.
+                Solve the riddle, then open the submission form. Your{" "}
+                <span className="font-medium text-foreground">QR ID</span> will already be
+                filled in for you.
               </p>
 
               <Button asChild size="lg" className="mt-5 w-full">

@@ -19,16 +19,26 @@ export function PublicLeaderboard({ rows }: { rows: LeaderboardRow[] }) {
     );
   }
 
-  const medal = ["text-google-yellow", "text-muted-foreground", "text-google-red"];
+  // Gold, silver and bronze for the first three places.
+  const medal = [
+    "bg-google-yellow/20 text-[#8a6d00] ring-1 ring-google-yellow/60",
+    "bg-slate-200/70 text-slate-600 ring-1 ring-slate-300",
+    "bg-orange-100 text-orange-700 ring-1 ring-orange-200",
+  ];
 
   return (
-    <ol className="divide-y rounded-xl border bg-card">
+    <ol className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
       {rows.map((r, i) => (
-        <li key={r.attemptId} className="flex items-center gap-3 p-3 sm:p-4">
+        <li
+          key={r.attemptId}
+          className={`flex items-center gap-3 p-3 transition-colors hover:bg-muted/40 sm:p-4 ${
+            i === 0 ? "bg-google-yellow/[0.04]" : ""
+          }`}
+        >
           <span
-            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
-              i < 3 ? medal[i] : "text-muted-foreground"
-            } bg-muted`}
+            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold tabular-nums ${
+              i < 3 ? medal[i] : "bg-muted text-muted-foreground"
+            }`}
           >
             {i + 1}
           </span>

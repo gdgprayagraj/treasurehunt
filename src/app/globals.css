@@ -71,4 +71,42 @@
   .text-balance {
     text-wrap: balance;
   }
+
+  /* Grey loading shapes with a soft light sweeping across (UI library C04). */
+  .skeleton-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  .skeleton-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+    animation: skeleton-sweep 1.4s ease-in-out infinite;
+  }
+  @keyframes skeleton-sweep {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+  /* Rolling numbers (UI library C08). The element's own transform holds the
+     final digit; this only plays the roll from 0 into it. */
+  .rolling-digit {
+    animation-name: rolling-digit-in;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    animation-fill-mode: none;
+  }
+  @keyframes rolling-digit-in {
+    from {
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton-shimmer::after,
+    .rolling-digit {
+      animation: none;
+    }
+  }
 }

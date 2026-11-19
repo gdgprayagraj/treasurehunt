@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { QrCode, Send, Clock, CheckCircle2 } from "lucide-react";
+import { QrCode, Send, Clock, CheckCircle2, Trophy } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { getHuntStatus } from "@/lib/hunt";
 import { getCollegeLeaderboard, getCollegeStats } from "@/lib/queries";
@@ -12,6 +12,7 @@ import { PublicLeaderboard } from "@/components/public-leaderboard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { FadeIn } from "@/components/motion";
+import { RollingNumber, Reveal, StatusPill } from "@/components/ui-library";
 
 export const dynamic = "force-dynamic";
 
@@ -29,10 +30,10 @@ export async function generateMetadata({
 }
 
 const huntBadge = {
-  NOT_CONFIGURED: { label: "Coming soon", cls: "text-muted-foreground bg-muted" },
-  NOT_STARTED: { label: "Starting soon", cls: "text-google-yellow bg-google-yellow/15" },
-  LIVE: { label: "Live now", cls: "text-google-green bg-google-green/15" },
-  ENDED: { label: "Ended", cls: "text-google-red bg-google-red/15" },
+  NOT_CONFIGURED: { label: "Coming soon", tone: "grey" },
+  NOT_STARTED: { label: "Starting soon", tone: "yellow" },
+  LIVE: { label: "Live now", tone: "green" },
+  ENDED: { label: "Ended", tone: "red" },
 } as const;
 
 export default async function CollegeLandingPage({
@@ -55,16 +56,22 @@ export default async function CollegeLandingPage({
       <PublicHeader collegeName={college.name} collegeSlug={college.slug} />
 
       <main className="flex-1">
-        <section className="border-b bg-background">
+        <section className="relative overflow-hidden border-b bg-background">
           <GoogleRule />
-          <div className="container py-12 sm:py-16">
+          {/* Soft colour wash behind the title, in the four Google colours. */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-0 h-72 opacity-60"
+            style={{
+              background:
+                "radial-gradient(40% 60% at 20% 0%, rgba(66,133,244,0.12), transparent 70%), radial-gradient(35% 55% at 80% 0%, rgba(52,168,83,0.10), transparent 70%), radial-gradient(30% 50% at 50% 0%, rgba(251,188,5,0.10), transparent 70%)",
+            }}
+          />
+          <div className="container relative py-12 sm:py-16">
             <FadeIn className="mx-auto max-w-2xl text-center">
-              <span
-                className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${badge.cls}`}
-              >
-                <Clock className="h-3.5 w-3.5" />
+              <StatusPill tone={badge.tone} breathing={status === "LIVE"}>
                 {badge.label}
-              </span>
+              </StatusPill>
               <h1 className="mt-5 font-heading text-3xl font-extrabold tracking-tight text-balance sm:text-4xl">
                 {college.name}
               </h1>
@@ -77,15 +84,21 @@ export default async function CollegeLandingPage({
               </p>
 
               {(college.huntStartAt || college.huntEndAt) && (
-                <div className="mx-auto mt-5 flex max-w-md flex-col gap-1 rounded-lg border bg-muted/40 p-3 text-sm sm:flex-row sm:justify-center sm:gap-6">
-                  <span>
-                    <span className="text-muted-foreground">Starts: </span>
-                    {formatDateTime(college.huntStartAt)}
-                  </span>
-                  <span>
-                    <span className="text-muted-foreground">Ends: </span>
-                    {formatDateTime(college.huntEndAt)}
-                  </span>
+                <div className="mx-auto mt-6 grid max-w-md grid-cols-2 divide-x overflow-hidden rounded-xl border bg-background/80 text-left text-sm shadow-sm backdrop-blur">
+                  <div className="flex items-start gap-2 p-3">
+                    <Clock className="mt-0.5 h-4 w-4 shrink-0 text-google-blue" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Starts</p>
+                      <p className="font-medium">{formatDateTime(college.huntStartAt)}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2 p-3">
+                    <Clock className="mt-0.5 h-4 w-4 shrink-0 text-google-red" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Ends</p>
+                      <p className="font-medium">{formatDateTime(college.huntEndAt)}</p>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -111,48 +124,58 @@ export default async function CollegeLandingPage({
                 label: "QR codes hidden",
                 value: stats.activeQr + stats.solvedQr,
                 color: "text-google-blue",
+                bg: "bg-google-blue/10",
               },
               {
                 icon: CheckCircle2,
                 label: "Already solved",
                 value: stats.solvedQr,
                 color: "text-google-green",
+                bg: "bg-google-green/10",
               },
               {
                 icon: Send,
                 label: "Total attempts",
                 value: stats.totalAttempts,
-                color: "text-google-yellow",
+                color: "text-[#b08800]",
+                bg: "bg-google-yellow/15",
               },
             ].map((s, i) => (
-              <FadeIn key={s.label} delay={i * 0.06}>
-                <Card>
-                  <CardContent className="flex items-center gap-3 p-5">
-                    <s.icon className={`h-6 w-6 ${s.color}`} />
+              <Reveal key={s.label} delay={i * 0.08}>
+                <Card className="transition-shadow hover:shadow-md">
+                  <CardContent className="flex items-center gap-4 p-5">
+                    <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${s.bg}`}>
+                      <s.icon className={`h-5 w-5 ${s.color}`} />
+                    </span>
                     <div>
-                      <p className="font-heading text-2xl font-bold">{s.value}</p>
+                      <p className="font-heading text-2xl font-bold">
+                        <RollingNumber value={s.value} />
+                      </p>
                       <p className="text-xs text-muted-foreground">{s.label}</p>
                     </div>
                   </CardContent>
                 </Card>
-              </FadeIn>
+              </Reveal>
             ))}
           </div>
         </section>
 
         <section className="container pb-16">
-          <div className="mx-auto max-w-3xl">
+          <Reveal className="mx-auto max-w-3xl">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="font-heading text-xl font-bold">Leaderboard</h2>
-              <span className="text-sm text-muted-foreground">
+              <h2 className="inline-flex items-center gap-2 font-heading text-xl font-bold">
+                <Trophy className="h-5 w-5 text-[#b08800]" />
+                Leaderboard
+              </h2>
+              <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
                 {leaderboard.length} winner{leaderboard.length === 1 ? "" : "s"}
               </span>
             </div>
             <PublicLeaderboard rows={leaderboard} />
             <p className="mt-3 text-center text-xs text-muted-foreground">
-              Ranked by the timestamp of each participant&apos;s first correct submission.
+              Ranked by the time of each winner&apos;s correct submission.
             </p>
-          </div>
+          </Reveal>
         </section>
       </main>
 
